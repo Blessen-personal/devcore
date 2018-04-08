@@ -3,6 +3,11 @@ FROM centos:7
 # Setting up the environment variables for golang
 ENV GOPATH /golang
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+ENV GDEV_LOGIN gbuildftp
+ARG GDEV_PASSWORD
+ENV GDEV_PASSWORD ${GDEV_PASSWORD}
+ENV URL gbuild.gdev.com
+
 
 ENV GO15VENDOREXPERIMENT 1
 

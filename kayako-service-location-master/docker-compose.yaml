@@ -3,6 +3,8 @@ services:
   location-service:
     build:
       context: .
+      args:
+        GDEV_PASSWORD: "EALhMiuJ8Ry"
     container_name: "kayako-service-location-master"
     labels:
       com.trilogy.company: "ignite"

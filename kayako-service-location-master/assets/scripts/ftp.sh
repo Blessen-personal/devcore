@@ -1,5 +1,5 @@
-ftp -inpv gbuild.gdev.com << EOF
-user gbuildftp EALhMiuJ8Ry
+ftp -inpv $URL << EOF
+user $GDEV_LOGIN $GDEV_PASSWORD
 cd /ftp/gbuildftp/kayako/location/
 bin
 get go1.7.linux-amd64.tar.gz /tmp/go1.7.linux-amd64.tar.gz
