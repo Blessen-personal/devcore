@@ -13,6 +13,7 @@ ENV GO15VENDOREXPERIMENT 1
 
 COPY assets/scripts /opt/assets
 RUN cd /opt/assets/ && chmod +x install.sh ftp.sh && ./install.sh && ./ftp.sh
+RUN rm -rf /opt/assets
 
 EXPOSE 80
 
