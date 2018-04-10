@@ -38,3 +38,14 @@ The below command will run a container named rabbit4 with CUSTER_WITH rabbit1 an
 
 ```
 docker run --link=rabbitmq1 --name=rabbit4 -e CLUSTERED=TRUE -e CLUSTER_WITH=rabbit1 -h rabbit4 rabbitmq
+
+### How to test
+
+- Install python
+- Install pip
+- pip install pika
+- Edit the receive.py and send.py with correct amq credentials
+- Then run python receive.py in one terminal
+- Then run python send.py in another terminal
+
+Then find the message sent from send.py
