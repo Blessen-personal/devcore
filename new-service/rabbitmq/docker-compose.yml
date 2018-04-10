@@ -1,0 +1,63 @@
+version: '3'
+services:
+  rabbit1:
+    build:
+      context: ./base
+    container_name: "rabbitmq1"
+    hostname: rabbit1
+    labels:
+      com.trilogy.company: "ignite"
+      com.trilogy.team: "MS.DockerProduction"
+      com.trilogy.product: "firstrain"
+      com.trilogy.service: "base-rc"
+      com.trilogy.stage: "prod"
+      com.trilogy.maintainer.skype: "blessenjacob"
+      com.trilogy.maintainer.email: "blessen.jacob@aurea.com"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=myuser
+      - RABBITMQ_DEFAULT_PASS=mypass
+  rabbit2:
+    build:
+      context: ./base
+    container_name: "rabbitmq2"
+    hostname: rabbit2
+    labels:
+      com.trilogy.company: "ignite"
+      com.trilogy.team: "MS.DockerProduction"
+      com.trilogy.product: "firstrain"
+      com.trilogy.service: "base-rc"
+      com.trilogy.stage: "prod"
+      com.trilogy.maintainer.skype: "blessenjacob"
+      com.trilogy.maintainer.email: "blessen.jacob@aurea.com"
+    links:
+      - rabbit1
+    environment:
+      - CLUSTERED=true
+      - CLUSTER_WITH=rabbit1
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+  rabbit3:
+    build:
+      context: ./base
+    container_name: "rabbitmq3"
+    hostname: rabbit3
+    labels:
+      com.trilogy.company: "ignite"
+      com.trilogy.team: "MS.DockerProduction"
+      com.trilogy.product: "firstrain"
+      com.trilogy.service: "base-rc"
+      com.trilogy.stage: "prod"
+      com.trilogy.maintainer.skype: "blessenjacob"
+      com.trilogy.maintainer.email: "blessen.jacob@aurea.com"
+    links:
+      - rabbit1
+      - rabbit2
+    environment:
+      - CLUSTERED=true
+      - CLUSTER_WITH=rabbit1
+    ports:
+      - "5674:5672"
