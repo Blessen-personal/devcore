@@ -20,7 +20,7 @@ docker build -t rabbitmq .
 This Docker image places the rabbitmq log files inside /var/log/rabbitmq. If required, this can be mapped as a volume while docker run.
 
 ```
-docker run -d --name=rabbitmq ems-rabbitmq
+docker run -d --name=rabbitmq rabbitmq
 ```
 The above commands will run RabbitMQ in the default Docker networking with ports 5672 and 15672 exposed, and a generated hostname. If you want to use this container in a cluster, its helpful to explicitly set hostname using -h
 
