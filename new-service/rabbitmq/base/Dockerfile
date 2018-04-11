@@ -1,5 +1,7 @@
 FROM centos:7
 
+ENV LANG="en_US.UTF-8"
+
 RUN mkdir -p /opt/assets
 COPY assets/scripts /opt/assets
 RUN cd /opt/assets && chmod a+x install.sh && ./install.sh
