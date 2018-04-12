@@ -1,0 +1,61 @@
+#!/usr/bin/env groovy
+@Library(['eng-build-utils']) _
+
+pipeline {
+    environment {
+            DOCKER_HOST='tcp://dlb1.aureacentral.com:2376'
+            DOCKER_TLS_VERIFY='1'
+            DOCKER_CERT_PATH='/opt/.docker/'
+    }
+    agent {
+        label "${env.DOCKER_NODE_LABEL}"
+    }
+    options {
+        // disableConcurrentBuilds()
+        timestamps()
+    }
+    stages {
+        stage("Provisioning") {
+            steps {
+                sh """
+                    whoami
+                    printenv
+                """
+            }
+        }
+        stage("Build") {
+            steps {
+                dir ("kayako-service-location-master") {
+                    sh """
+                        docker build --tag registry2.swarm.devfactory.com/aurea/kayako/kayako-service-location-master:latest --force-rm --no-cache .
+                    """
+                }
+            }
+        }
+        stage("Push") {
+            when { expression { return params.DO_PUSH == true }}
+            steps {
+                sh """
+                    docker push registry2.swarm.devfactory.com/aurea/kayako/kayako-service-location-master:latest
+                """
+            }
+        }
+    }
+    post {
+        always {
+            // mailing
+            script {
+                comitterEmail = sh (
+                    script: "git rev-parse HEAD | git show --format='%ae' | grep -m1 ''",
+                    returnStdout: true
+                ).trim()
+            }
+
+            step([$class: 'Mailer',
+                recipients: "${comitterEmail}, ${EMAIL_TO}",
+                notifyEveryUnstableBuild: true,
+                sendToIndividuals: true
+            ])
+        }
+    }
+}
