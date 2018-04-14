@@ -1,0 +1,103 @@
+#!/usr/bin/env groovy
+@Library(['eng-build-utils']) _
+
+
+pipeline {
+    environment {
+            DOCKER_HOST='tcp://dlb1.aureacentral.com:2376'
+            DOCKER_TLS_VERIFY='1'
+            DOCKER_CERT_PATH='/opt/.docker/'
+    }
+    agent {
+        label "${env.DOCKER_NODE_LABEL}"
+    }
+    options {
+        timestamps()
+    }
+    stages {
+        stage("Provisioning") {
+            steps {
+                sh """
+                    whoami
+                    printenv
+                """
+            }
+        }
+        stage("Clean") {
+            steps {
+                script {
+                    running = sh (
+                        script: "docker ps -aq --filter 'name=kayako-realtime-engine' --filter 'status=running'",
+                        returnStdout: true
+                    ).trim()
+                    sh "echo RUNNING: ${running}"
+
+                    if (running != "")
+                    {
+                        sh ("docker stop ${running}")
+                    }
+
+                    exited =  sh (
+                        script: "docker ps -aq --filter 'name=kayako-realtime-engine' --filter 'status=exited\'",
+                        returnStdout: true
+                    ).trim()
+                    sh "echo EXITED: ${exited}"
+
+                    if (exited != "")
+                    {
+                        sh "docker rm ${exited}"
+                    }
+                }
+            }
+        }
+        stage("Build") {
+            steps {
+                sh """
+                    docker build --tag registry2.swarm.devfactory.com/aurea/kayako/kayako-realtime-engine:latest --build-arg GDEV_PASSWORD=EALhMiuJ8Ry --force-rm --no-cache .
+                """
+            }
+        }
+        stage("Push") {
+            when { expression { return params.DO_PUSH == true }}
+            steps {
+                sh """
+                    docker push registry2.swarm.devfactory.com/aurea/kayako/kayako-realtime-engine:latest
+                """
+            }
+        }
+        stage("Start") {
+            when { expression { return params.DO_START == true}}
+            steps {
+                sh """
+                    docker run --name=kayako-realtime-engine -d -e KRE_ENV=staging -e CONSUL_HOST='http://localhost:8500/' -p 8102:8102 registry2.swarm.devfactory.com/aurea/kayako/kayako-realtime-engine:latest
+                    docker ps | grep kayako-realtime-engine
+                """
+            }
+        }
+        stage("Test") {
+            when { expression { return params.DO_TEST == true}}
+            steps {
+                sh """
+                    docker exec kayako-realtime-engine bash -c 'cd /code && mix test'
+                """
+            }
+        }
+    }
+    post {
+        always {
+            // mailing
+            script {
+                comitterEmail = sh (
+                    script: "git rev-parse HEAD | git show --format='%ae' | grep -m1 ''",
+                    returnStdout: true
+                ).trim()
+            }
+
+            step([$class: 'Mailer',
+                recipients: "${comitterEmail}, ${EMAIL_TO}",
+                notifyEveryUnstableBuild: true,
+                sendToIndividuals: true
+            ])
+        }
+    }
+}

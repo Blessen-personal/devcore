@@ -1,0 +1,11 @@
+version: '3'
+services:
+    kayako-realtime-engine:
+        build:
+          context: .
+        container_name: kre
+        environment:
+            - KRE_ENV=vagrant
+            - 'CONSUL_HOST=http://localhost:8500'
+        ports:
+            - '8102:8102'
