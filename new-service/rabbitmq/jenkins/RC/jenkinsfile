@@ -40,6 +40,23 @@ pipeline {
                 """
             }
         }
+        stage("Start") {
+            when { expression { return params.DO_START == true}}
+            steps {
+                sh """
+                    docker run --name=rabbitmq -d -e RABBITMQ_DEFAULT_USER=mysuser -e RABBITMQ_DEFAULT_PASS=mypass -p 5672:5672 registry2.swarm.devfactory.com/aurea/kayako/amaq:latest
+                    docker ps | grep rabbitmq
+                """
+            }
+        }
+        stage("Test") {
+            when { expression { return params.DO_TEST == true}}
+            steps {
+                sh """
+                    docker exec rabbitmq bash -c 'rabbitmqctl status'
+                """
+            }
+        }
     }
     post {
         always {
