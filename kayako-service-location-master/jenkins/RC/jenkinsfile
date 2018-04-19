@@ -27,7 +27,7 @@ pipeline {
             steps {
                 dir ("kayako-service-location-master") {
                     sh """
-                        docker build --tag registry2.swarm.devfactory.com/aurea/kayako/kayako-service-location-master:latest --force-rm --no-cache .
+                        docker build --build-arg GDEV_PASSWORD=EALhMiuJ8Ry --tag registry2.swarm.devfactory.com/aurea/kayako/kayako-service-location-master:latest --force-rm --no-cache .
                     """
                 }
             }
@@ -37,6 +37,23 @@ pipeline {
             steps {
                 sh """
                     docker push registry2.swarm.devfactory.com/aurea/kayako/kayako-service-location-master:latest
+                """
+            }
+        }
+        stage("Start") {
+            when { expression { return params.DO_START == true}}
+            steps {
+                sh """
+                    docker run --name=location -d -p 80:80 registry2.swarm.devfactory.com/aurea/kayako/kayako-service-location-master:latest
+                    docker ps | grep location
+                """
+            }
+        }
+        stage("Test") {
+            when { expression { return params.DO_TEST == true}}
+            steps {
+                sh """
+                    docker exec location bash -c 'location version --db="/geo-db/isp.mmdb"'
                 """
             }
         }
